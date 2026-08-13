@@ -34,10 +34,41 @@ const indexes = {
       keys: {
         id_municipalidad: 1,
         'prioridad.nivel': 1,
-        estado: 1,
         creado_en: -1,
       },
-      options: { name: 'dashboard_prioridad_estado_fecha' },
+      options: { name: 'dashboard_prioridad_fecha' },
+    },
+    {
+      keys: {
+        id_municipalidad: 1,
+        'clasificacion.severidad': 1,
+        creado_en: -1,
+      },
+      options: { name: 'dashboard_severidad_fecha' },
+    },
+    {
+      keys: {
+        id_municipalidad: 1,
+        'origen.canal': 1,
+        creado_en: -1,
+      },
+      options: { name: 'dashboard_canal_fecha' },
+    },
+    {
+      keys: {
+        id_municipalidad: 1,
+        'clasificacion.requiere_revision_humana': 1,
+        creado_en: -1,
+      },
+      options: { name: 'dashboard_revision_fecha' },
+    },
+    {
+      keys: {
+        id_municipalidad: 1,
+        'resumen_respuesta.escalada_centro_emergencia': 1,
+        creado_en: -1,
+      },
+      options: { name: 'dashboard_escalada_fecha' },
     },
     {
       keys: {
@@ -75,6 +106,10 @@ const indexes = {
         'perfil_cuidado.nivel_dependencia': 1,
       },
       options: { name: 'dashboard_perfiles_dependencia' },
+    },
+    {
+      keys: { id_municipalidad: 1, id_usuario: 1, activo: 1 },
+      options: { name: 'detalle_perfil_usuario' },
     },
   ],
   zonas: [

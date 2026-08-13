@@ -8,8 +8,11 @@
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main.js",
+    "mongo:import-scenario": "node scripts/import-scenario.mjs",
+    "mongo:enrich-operational": "node scripts/enrich-operational-fields.mjs",
     "mongo:indexes": "node scripts/create-indexes.mjs",
     "mongo:explain": "node scripts/explain-dashboard.mjs",
+    "dashboard:verify": "node scripts/verify-analytics.mjs",
     "check": "npm run build"
   },
   "dependencies": {

@@ -5,6 +5,7 @@ import {
   IsISO8601,
   IsOptional,
   IsString,
+  Matches,
   Max,
   Min,
 } from 'class-validator';
@@ -18,6 +19,10 @@ export const CATEGORIAS = [
   'asistencia_cuidador',
   'asistencia_comunitaria',
 ] as const;
+
+export const PRIORIDADES = ['P1', 'P2', 'P3', 'P4'] as const;
+export const SEVERIDADES = ['baja', 'media', 'alta', 'critica'] as const;
+export const CANALES = ['reloj_inteligente', 'movil', 'cuidador'] as const;
 
 export class DashboardQueryDto {
   @IsOptional()
@@ -42,4 +47,26 @@ export class DashboardQueryDto {
   @IsOptional()
   @IsString()
   zona?: string;
+
+  @IsOptional()
+  @Matches(/^(P1|P2|P3|P4)(,(P1|P2|P3|P4))*$/)
+  prioridad?: string;
+
+  @IsOptional()
+  @Matches(/^(baja|media|alta|critica)(,(baja|media|alta|critica))*$/)
+  severidad?: string;
+
+  @IsOptional()
+  @Matches(
+    /^(reloj_inteligente|movil|cuidador)(,(reloj_inteligente|movil|cuidador))*$/,
+  )
+  canal?: string;
+
+  @IsOptional()
+  @IsIn(['true', 'false'])
+  requiere_revision?: 'true' | 'false';
+
+  @IsOptional()
+  @IsIn(['true', 'false'])
+  escalada?: 'true' | 'false';
 }

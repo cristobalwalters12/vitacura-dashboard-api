@@ -17,7 +17,10 @@ import {
   UsuarioSchema,
 } from '../database/schemas/usuario.schema';
 import { Zona, ZonaSchema } from '../database/schemas/zona.schema';
+import { AlertDetailController } from './alert-detail.controller';
+import { AlertDetailService } from './alert-detail.service';
 import { DashboardController } from './dashboard.controller';
+import { DashboardAnalyticsService } from './dashboard-analytics.service';
 import { DashboardService } from './dashboard.service';
 
 @Module({
@@ -30,7 +33,11 @@ import { DashboardService } from './dashboard.service';
       { name: PerfilCuidado.name, schema: PerfilCuidadoSchema },
     ]),
   ],
-  controllers: [DashboardController],
-  providers: [DashboardService],
+  controllers: [DashboardController, AlertDetailController],
+  providers: [
+    DashboardService,
+    DashboardAnalyticsService,
+    AlertDetailService,
+  ],
 })
 export class DashboardModule {}
