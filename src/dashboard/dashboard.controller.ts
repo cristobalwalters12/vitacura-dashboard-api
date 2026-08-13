@@ -1,14 +1,20 @@
-import { Controller, Get, Header, Query } from '@nestjs/common';
-import { DashboardService } from './dashboard.service';
-import { DashboardAnalyticsService } from './dashboard-analytics.service';
+import { Controller, Get, Header, Inject, Query } from '@nestjs/common';
+import {
+  DASHBOARD_ANALYTICS_READER,
+  DASHBOARD_READER,
+  DashboardAnalyticsReader,
+  DashboardReader,
+} from './dashboard-readers';
 import { DashboardQueryDto } from './dto/dashboard-query.dto';
 import { MapaQueryDto } from './dto/mapa-query.dto';
 
 @Controller('dashboard')
 export class DashboardController {
   constructor(
-    private readonly dashboardService: DashboardService,
-    private readonly dashboardAnalytics: DashboardAnalyticsService,
+    @Inject(DASHBOARD_READER)
+    private readonly dashboardService: DashboardReader,
+    @Inject(DASHBOARD_ANALYTICS_READER)
+    private readonly dashboardAnalytics: DashboardAnalyticsReader,
   ) {}
 
   @Get('resumen')

@@ -1,6 +1,6 @@
 # Vitacura Dashboard API
 
-Backend NestJS + Fastify + Mongoose para consultar MongoDB Atlas sin descargar las alertas completas en el frontend.
+Backend NestJS + Fastify con backends intercambiables MongoDB/PostgreSQL para consultar la analítica sin descargar las alertas completas en el frontend.
 
 ## Requisitos
 
@@ -22,12 +22,65 @@ PORT=3000
 FRONTEND_ORIGIN=http://localhost:5173
 MONGODB_URI=mongodb+srv://USUARIO:CONTRASENA@cluster.mongodb.net
 MONGODB_DATABASE=community_sos_demo_v3
+DATA_BACKEND=mongo
+POSTGRES_HOST=159.112.133.28
+POSTGRES_PORT=5432
+POSTGRES_DATABASE=geodb
+POSTGRES_SCHEMA=vita
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=CONTRASENA_POSTGRES
+POSTGRES_SSL=false
 ANALYTICS_CUTOFF_DATE=2026-08-15T23:59:59.999Z
 MUNICIPALIDAD_ID=64f000000000000000000132
 MAPA_LIMITE_PREDETERMINADO=5000
 ```
 
 Si la contraseña contiene caracteres como `@`, `:`, `/`, `?`, `#` o `%`, debe codificarse como URL antes de incluirla en la URI.
+
+## PostgreSQL/PostGIS en paralelo
+
+La migración POC vive dentro del esquema `vita` sin modificar ni reemplazar MongoDB. `DATA_BACKEND=mongo` mantiene el funcionamiento actual; `DATA_BACKEND=postgres` selecciona las implementaciones SQL de los cuatro contratos y arranca sin abrir una conexión MongoDB. El cambio no requiere modificar rutas ni configuración del frontend.
+
+Las migraciones crean tablas relacionales para municipalidades, zonas, usuarios, dispositivos, perfiles de cuidado y alertas. Los campos usados por filtros y métricas se almacenan como columnas, el documento original se conserva en `jsonb`, y las geometrías utilizan SRID 4326 e índices GiST.
+
+```powershell
+npm run postgres:migrate
+npm run postgres:migration-status
+npm run postgres:import-scenario
+npm run postgres:verify-data
+npm run postgres:explain
+```
+
+El ejecutor:
+
+- crea o confirma el esquema configurado;
+- aplica cada archivo SQL dentro de una transacción;
+- evita ejecuciones simultáneas mediante un advisory lock;
+- registra versión y checksum en `vita.schema_migrations`;
+- se niega a continuar si una migración ya aplicada fue modificada.
+
+`postgres:migration-status` muestra conexión, versiones de PostGIS, migraciones, tablas e índices sin imprimir credenciales. `postgres:import-scenario` carga el paquete Extended JSON en una única transacción y se niega a escribir si las tablas ya contienen información. `postgres:verify-data` compara el manifiesto, conteos, agregados, relaciones, geometrías y columnas extraídas contra el paquete de origen. `postgres:explain` confirma con `EXPLAIN (ANALYZE, BUFFERS)` que las consultas representativas utilizan índices analíticos, GiST y de clave primaria.
+
+El importador conserva los identificadores Mongo como `varchar(24)`, normaliza puntos y polígonos a SRID 4326 y guarda cada documento original en la columna `detalle jsonb`. Las agregaciones y filtros consultan columnas relacionales; el JSONB se reserva para reconstruir el detalle rico sin perder información.
+
+Para una comparación previa al corte, arranca temporalmente cada motor en un puerto distinto y ejecuta la matriz automática:
+
+```powershell
+# Terminal 1: el .env permanece con DATA_BACKEND=mongo
+$env:DATA_BACKEND='mongo'; $env:PORT='3000'; npm start
+
+# Terminal 2
+$env:DATA_BACKEND='postgres'; $env:PORT='3001'; npm start
+
+# Terminal 3
+npm run postgres:verify-api-parity
+```
+
+La matriz cubre resumen, mapa/PostGIS, analítica y detalle con períodos de 7, 30 y 90 días, categoría, zona, filtros múltiples y `bbox`. Los conteos, documentos e indicadores deterministas deben ser exactos; medianas y p90 admiten una tolerancia pequeña porque MongoDB usa acumuladores aproximados y PostgreSQL calcula percentiles continuos exactos.
+
+Cuando se apruebe el corte, basta con cambiar `DATA_BACKEND=postgres` y reiniciar la API. Para volver atrás, restablece `DATA_BACKEND=mongo`; ninguna de las dos acciones escribe ni elimina datos del otro motor.
+
+El resultado de la validación funcional, visual y de rendimiento está documentado en [`docs/postgres-precut-2026-08-13.md`](docs/postgres-precut-2026-08-13.md).
 
 ## Instalar y ejecutar
 
