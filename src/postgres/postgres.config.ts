@@ -5,6 +5,18 @@ function booleanSetting(value: string | undefined) {
   return value?.trim().toLowerCase() === 'true';
 }
 
+function integerSetting(
+  value: string | undefined,
+  fallback: number,
+  minimum: number,
+  maximum: number,
+) {
+  const parsed = Number(value ?? fallback);
+  return Number.isInteger(parsed)
+    ? Math.min(Math.max(parsed, minimum), maximum)
+    : fallback;
+}
+
 export function createPostgresPoolConfig(config: ConfigService): PoolConfig {
   const port = Number(config.get<string>('POSTGRES_PORT', '5432'));
   if (!Number.isInteger(port) || port <= 0 || port > 65_535) {
@@ -24,11 +36,31 @@ export function createPostgresPoolConfig(config: ConfigService): PoolConfig {
       ? { rejectUnauthorized: false }
       : false,
     application_name: 'vitacura-dashboard-api',
-    connectionTimeoutMillis: 10_000,
-    idleTimeoutMillis: 30_000,
+    connectionTimeoutMillis: integerSetting(
+      config.get<string>('POSTGRES_CONNECTION_TIMEOUT_MS'),
+      2_000,
+      1_000,
+      30_000,
+    ),
+    idleTimeoutMillis: integerSetting(
+      config.get<string>('POSTGRES_IDLE_TIMEOUT_MS'),
+      30_000,
+      5_000,
+      300_000,
+    ),
     keepAlive: true,
     keepAliveInitialDelayMillis: 10_000,
-    statement_timeout: 60_000,
-    max: 10,
+    statement_timeout: integerSetting(
+      config.get<string>('POSTGRES_STATEMENT_TIMEOUT_MS'),
+      60_000,
+      5_000,
+      300_000,
+    ),
+    max: integerSetting(
+      config.get<string>('POSTGRES_POOL_MAX'),
+      6,
+      1,
+      30,
+    ),
   };
 }

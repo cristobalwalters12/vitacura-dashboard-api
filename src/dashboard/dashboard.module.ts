@@ -21,6 +21,7 @@ import { Zona, ZonaSchema } from '../database/schemas/zona.schema';
 import { AlertDetailController } from './alert-detail.controller';
 import { AlertDetailService } from './alert-detail.service';
 import { DashboardController } from './dashboard.controller';
+import { DashboardResponseCacheService } from './dashboard-response-cache.service';
 import { DashboardAnalyticsService } from './dashboard-analytics.service';
 import {
   ALERT_DETAIL_READER,
@@ -86,6 +87,8 @@ const readerProviders = [
     ...mongoProviders,
     ...postgresProviders,
     ...readerProviders,
+    DashboardResponseCacheService,
   ],
+  exports: [DashboardResponseCacheService],
 })
 export class DashboardModule {}

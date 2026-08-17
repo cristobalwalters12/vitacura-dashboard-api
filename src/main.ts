@@ -21,7 +21,7 @@ async function bootstrap() {
   app.setGlobalPrefix('api/v1');
   app.enableCors({
     origin: frontendOrigin.split(',').map((origin) => origin.trim()),
-    methods: ['GET', 'OPTIONS'],
+    methods: ['GET', 'PATCH', 'OPTIONS'],
     credentials: true,
   });
   app.useGlobalPipes(

@@ -11,6 +11,7 @@
     "mongo:import-scenario": "node scripts/import-scenario.mjs",
     "mongo:enrich-operational": "node scripts/enrich-operational-fields.mjs",
     "mongo:indexes": "node scripts/create-indexes.mjs",
+    "mongo:setup-incoming-alerts": "node scripts/setup-incoming-alerts.mjs",
     "mongo:explain": "node scripts/explain-dashboard.mjs",
     "postgres:migrate": "node scripts/postgres/migrate.mjs",
     "postgres:migration-status": "node scripts/postgres/migration-status.mjs",
@@ -20,7 +21,8 @@
     "postgres:verify-api-parity": "node scripts/postgres/verify-api-parity.mjs",
     "dashboard:verify": "node scripts/verify-analytics.mjs",
     "dashboard:benchmark": "node scripts/benchmark-dashboard-api.mjs",
-    "check": "npm run build"
+    "test:resilience": "node scripts/test-postgres-resilience.mjs",
+    "check": "npm run build && npm run test:resilience"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.6",

@@ -5,6 +5,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { HealthController } from './health/health.controller';
 import { PostgresModule } from './postgres/postgres.module';
+import { OperationalAlertsModule } from './operational-alerts/operational-alerts.module';
+import { OPERATIONAL_MONGO_CONNECTION } from './operational-alerts/operational-alert.schema';
 
 const dataBackend = (process.env.DATA_BACKEND ?? 'mongo').toLowerCase();
 if (!['mongo', 'postgres'].includes(dataBackend)) {
@@ -38,12 +40,32 @@ const mongoConnection =
       ]
     : [];
 
+const operationalMongoConnection = MongooseModule.forRootAsync({
+  connectionName: OPERATIONAL_MONGO_CONNECTION,
+  inject: [ConfigService],
+  useFactory: (config: ConfigService) => {
+    const uri = config.get<string>('MONGODB_URI');
+    if (!uri) throw new Error('Falta MONGODB_URI en el archivo .env');
+    return {
+      uri,
+      dbName: config.get<string>('MONGODB_DATABASE', 'community_sos_demo_v3'),
+      maxPoolSize: 10,
+      minPoolSize: 1,
+      serverSelectionTimeoutMS: 10_000,
+      connectTimeoutMS: 10_000,
+      retryWrites: true,
+    };
+  },
+});
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     PostgresModule,
+    operationalMongoConnection,
     ...mongoConnection,
     DashboardModule,
+    OperationalAlertsModule,
   ],
   controllers: [HealthController],
 })
